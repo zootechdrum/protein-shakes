@@ -5,7 +5,7 @@
         <i class="material-icons delete" @click="deleteSmoothie(smoothie.id)">delete</i>
         <h2 class="indigo-text">{{ smoothie.title }}</h2>
         <ul class="ingrerdients">
-          <li v-for="(ing, index) in smoothie.ingrerdients" :key="index">
+          <li v-for="(ing, index) in smoothie.ingredients" :key="index">
            <span class="chip"> {{ ing }}</span>
           </li>
         </ul>
@@ -36,7 +36,10 @@ export default {
     db.collection("smoothies").get()
       .then(snapshot => {
         snapshot.forEach(doc => {
-          console.log(doc)
+          console.log(doc.data())
+          let smoothie = doc.data()
+          smoothie.id = doc.id
+          this.smoothies.push(smoothie)
         })
       }
     )
