@@ -1,16 +1,21 @@
 <template>
   <div class="add-smoothie container">
     <h2 class="center-align indigo-text">Add New Smoothie Recipe</h2>
-    <form>
+    <form @submit.prevent="AddSmoothie">
       <div class="field title">
         <label for="title">Smoothie Title</label>
         <input type="text" name="title" v-model="title">
       </div>
+      <div v-for="(ing, index) in ingredients" :key="index">
+        <label for="ingredient">Ingredient</label>
+        <input type="text" name="ingredient" v-model="ingredients[index]">
+      </div>
       <div class="field add-ingredient">
         <label for="add-ingredient">Add an ingredient</label>
-        <input type="text" name="add-ingredient">
+        <input type="text" name="add-ingredient" @keydown.tab.prevent="addIng" v-model="another">
       </div>
       <div class="field center-align">
+        <p v-if="{feedback}" class="red-text">{{this.feedback}}</p>
         <button class="btn pink">Add smoothie</button>
       </div>
     </form>
@@ -19,12 +24,49 @@
 
 <script>
 
+import db from "@/firebase/init";
+import slugify from "slugify";
+
 
 export default {
   name: 'AddSmoothie',
   data(){
     return {
-      title:null
+      title:null,
+      another:null,
+      ingredients: [],
+      feedback:null
+
+    }
+  },
+  methods: {
+    AddSmoothie(){
+      if(this.title){
+        this.feedback = null;
+        this.slug = slugify(this.title, {
+          replacement: '-',
+          remove: /[$*_+~.()'"!\-:@]/g,
+          lower: true
+        })
+        db.collection('smoothies').add({
+          title: this.title,
+          ingredients: this.ingredients,
+          slug: this.slug
+        }).then(() => {
+          this.$router.push({name: "Index"});
+        }).catch(err => {
+          console.log(err);
+        })
+      }
+    },
+    addIng() {
+      if(this.another){
+        this.ingredients.push(this.another);
+        this.another = null;
+        this.feedback = null;
+      }else {
+        this.feedback = "Please enter info"
+      }
     }
   }
 }
